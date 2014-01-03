@@ -1,12 +1,14 @@
 ﻿<html>
 
 <head>
-<title>BOINC MST Creator - Version 1.4</title>
+<title>BOINC MST Creator</title>
 <HTA:APPLICATION
      ID="oHTA"
      APPLICATIONNAME="BOINC MST Creator"
      ICON="http://n8felton.github.io/BOINC-MST-Creator/images/icon.ico"
-     SINGLEINSTANCE="yes">
+     SINGLEINSTANCE="yes"
+	 VERSION="1.4"
+ />
 <style type="text/css">
 body {
 	background-color: #EEEEEE;
@@ -33,9 +35,16 @@ a:hover {
 <script type="text/vbscript">
 
 Sub Window_OnLoad
+	UpdateTitle
     oAdvanced.style.display = "none"
     window.resizeTo 925,595
     oProjects.Value = "www.worldcommunitygrid.org 0123456789abcdef0123456789abcdef"
+End Sub
+
+Sub UpdateTitle
+	strTitle = document.title
+	strTitle = strTitle & " - Version " & oHTA.version
+	document.title = strTitle	
 End Sub
 
 Sub ClearProjects
