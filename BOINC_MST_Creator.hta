@@ -142,19 +142,6 @@ Sub GetXMLFiles
 	End If
 End Sub
 
-Sub GetMsiFile
-	On Error Resume Next
-	Set oDialog = CreateObject("UserAccounts.CommonDialog")
-	If Err = 0 Then 
-		oDialog.Filter = "MSI Database Files (*.MSI)|*.msi"
-		oDialog.Flags = &H1004
-		If oDialog.ShowOpen <> 0 Then oMsiFileLocation.Value = oDialog.FileName
-	Else
-		MsgBox "Unable to browse for a file on a non Windows XP PC. " & _
-			 "Please enter the value manually", vbInformation, Document.Title 
-	End If
-End Sub
-
 Sub GenerateMST()
 	Dim sDbCommand()
 	Dim sProjectsData
@@ -523,9 +510,7 @@ End Function
 <table id="oStandard">
 	<tr>
 		<td>Path to BOINC.MSI file</td>
-		<td><input type="text" value="" size="85" name="oMsiFileLocation">
-		<input type="button" value="..." onclick="GetMsiFile" style="height: 22px; width: 22px;">
-		</td>
+		<td><input type="file" value="" size="85" name="oMsiFileLocation"></td>
 	</tr>
 	<tr>
 		<td>Architecture</td>
