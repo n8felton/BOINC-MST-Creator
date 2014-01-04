@@ -506,174 +506,216 @@ End Function
 
 </script>
 <body scroll="no">
-
-<table id="oStandard">
-	<tr>
-		<td>Path to BOINC.MSI file</td>
-		<td><input type="file" value="" size="85" name="oMsiFileLocation"></td>
-	</tr>
-	<tr>
-		<td>Architecture</td>
-		<td>
-			<input type="radio" name="oArch" value="86" checked="true" /> x86
-			<input type="radio" name="oArch" value="64" /> x64
-		</td>
-	</tr>
-	<tr>
-		<td>BOINC Projects URLs and account keys <br>
-		<i>The two example projects shown have dummy<br>
-		account keys. Please change or delete them.<br>
-		</i></td>
-		<td><textarea name="oProjects" rows="4" cols="68"></textarea></td>
-	</tr>
-	<tr>
-		<td>(Enter only one project per line)</td>
-		<td>
-		<input type="button" value="Import Projects from an existing BOINC installation..." onclick="GetXMLFiles">
-		<input type="button" value="Clear List" onclick="ClearProjects"> </td>
-	</tr>
-	<tr>
-		<td>Location to install BOINC to</td>
-		<td><input type="text" size="85" name="oInstallDir" value="C:\Program Files\BOINC"></td>
-	</tr>
-		<td>Installation Method</td>
-<!--		<td><select size="1" name="oInstallType" onchange="ServiceSettings">  Version 5 legacy code -->
-			<td><select size="1" name="oInstallType">
+	<table id="oStandard">
+		<tr>
+			<td>Path to BOINC.MSI file</td>
+			<td>
+				<input type="file" value="" size="85" name="oMsiFileLocation" />
+			</td>
+		</tr>
+		<tr>
+			<td>Architecture</td>
+			<td>
+			<input type="radio" name="oArch" value="86" checked="true" /> x86 
+			<input type="radio" name="oArch" value="64" /> x64</td>
+		</tr>
+		<tr>
+			<td>BOINC Projects URLs and account keys
+			<br />
+			<i>The example project shown has a dummy
+			<br />account key. Please change or delete it.
+			<br /></i></td>
+			<td>
+				<textarea name="oProjects" rows="4" cols="68"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td>(Enter only one project per line)</td>
+			<td>
+			<input type="button" value="Import Projects from an existing BOINC installation..." onclick="GetXMLFiles" /> 
+			<input type="button" value="Clear List" onclick="ClearProjects" /></td>
+		</tr>
+		<tr>
+			<td>Location to install BOINC to</td>
+			<td>
+				<input type="text" size="85" name="oInstallDir" value="C:\Program Files\BOINC" />
+			</td>
+		</tr>
+		<tr>
+			<td>Installation Method</td>
+			<!--			<td><select size="1" name="oInstallType" onchange="ServiceSettings">  Version 5 legacy code -->
+			<td>
+				<select size="1" name="oInstallType">
 					<option value="Single">Single-User Install</option>
 					<option value="Shared">Shared Install</option>
-					<option selected value="Service">Service Install</option>
-		</select> </td>
+					<option selected="selected" value="Service">Service Install</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>Automatically enable the screensaver</td>
+			<td>
+				<input type="checkbox" name="oEnableScreensaver" />
+			</td>
+		</tr>
+		<tr>
+			<td>Automatically start BOINC when users sign on</td>
+			<td>
+				<input type="checkbox" name="oEnableLaunchAtLogon" />
+			</td>
+		</tr>
+		<tr>
+			<td>Remove &#39;Programs Menu&#39; Shortcut</td>
+			<td>
+				<input type="checkbox" name="oProgramsMenuShortcut" checked="true" />
+			</td>
+		</tr>
+		<tr>
+			<td>Remove BOINC from the &#39;Add/Remove Programs&#39; list</td>
+			<td>
+				<input type="checkbox" name="oArpSystemComponent" checked="true" />
+			</td>
+		</tr>
+		<tr>
+			<td>Allowed Remote Hosts (one host per line)</td>
+			<td>
+				<textarea name="oAllowedHosts" rows="3" cols="20"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td>Remote Access password (optional)</td>
+			<td>
+			<input type="password" size="23" name="oRemotePassword1" /> 
+			<input type="password" size="23" name="oRemotePassword2" /></td>
+		</tr>
+	<!--<tr>
+			<td id="oUsername" style="color:gray">User account for the service 
+			(optional)</td>
+			<td>
+			<input type="text" disabled="True" size="30" name="oServiceDomainUserName" value="Service install only"></td>
 	</tr>
 	<tr>
-		<td>Automatically enable the screensaver</td>
-		<td><input type="checkbox" name="oEnableScreensaver"></td>
+			<td id="oPassword" style="color:gray">Password for the user account</td>
+			<td>
+			<input type="password" size="23" disabled="True" name="oServicePassword1">
+			<input type="password" size="23" disabled="True" name="oServicePassword2">
+			</td>
 	</tr>
 	<tr>
-		<td>Automatically start BOINC when users sign on</td>
-		<td><input type="checkbox" name="oEnableLaunchAtLogon"></td>
-	</tr>
-	<tr>
-		<td>Remove 'Programs Menu' Shortcut</td>
-		<td><input type="checkbox" name="oProgramsMenuShortcut" checked="true"></td>
-	</tr>
-	<tr>
-		<td>Remove BOINC from the 'Add/Remove Programs' list</td>
-		<td><input type="checkbox" name="oArpSystemComponent" checked="true"></td>
-	</tr>
-	<tr>
-		<td>Allowed Remote Hosts (one host per line)</td>
-		<td><textarea name="oAllowedHosts" rows="3" cols="20"></textarea></td>
-	</tr>
-	<tr>
-		<td>Remote Access password (optional)</td>
-		<td><input type="password" size="23" name="oRemotePassword1">
-		<input type="password" size="23" name="oRemotePassword2"> </td>
-	</tr>
-<!--<tr>
-		<td id="oUsername" style="color:gray">User account for the service 
-		(optional)</td>
-		<td>
-		<input type="text" disabled="True" size="30" name="oServiceDomainUserName" value="Service install only"></td>
-	</tr>
-	<tr>
-		<td id="oPassword" style="color:gray">Password for the user account</td>
-		<td>
-		<input type="password" size="23" disabled="True" name="oServicePassword1">
-		<input type="password" size="23" disabled="True" name="oServicePassword2">
-		</td>
-	</tr>
-	<tr>
-		<td id="oPermissionsArea" style="color:gray">BOINC Folder Permissions</td>
-		<td><select size="1" disabled="True" name="oPermissions">
-		<option value="Domain Admins">Domain Administrators</option>
-		<option value="Administrators">Local Administrators</option>
-		<option value="Users">All Users</option>
-		</select> </td>
+			<td id="oPermissionsArea" style="color:gray">BOINC Folder Permissions</td>
+			<td><select size="1" disabled="True" name="oPermissions">
+			<option value="Domain Admins">Domain Administrators</option>
+			<option value="Administrators">Local Administrators</option>
+			<option value="Users">All Users</option>
+			</select> </td>
 	</tr>
 -->
-</table>
-<table id="oAdvanced">
-	<tr>
-		<td style="width: 303px">BOINC Activity</td>
-		<td colspan="2"><input type="radio" name="oBoincActivity" value="1">Run 
-		Always <br>
-		<input type="radio" name="oBoincActivity" value="2" checked="True">Run based 
-		on preferences (Default)<br>
-		<input type="radio" name="oBoincActivity" value="3">Suspend</td>
-	</tr>
-	<tr>
-		<td>Network Activity</td>
-		<td colspan="2"><input type="radio" name="oNetworkActivity" value="1">Always 
-		Available <br>
-		<input type="radio" name="oNetworkActivity" value="2" checked="True">Based 
-		on preferences (Default) <br>
-		<input type="radio" name="oNetworkActivity" value="3">Suspended</td>
-	</tr>
-	<tr>
-		<td>Connect via HTTP proxy server</td>
-		<td><input type="checkbox" name="oUseHttpProxy" onclick="ChangeHttpProxyArea"></td>
-	</tr>
-	<tr id="oHttpArea" style="color:gray">
-		<td>HTTP Proxy Server Configuration</td>
-		<td>Address:</td>
-		<td><input type="text" disabled="True" name="oHttpServerName"></td>
-	</tr>
-	<tr id="oHttpArea" style="color:gray">
-		<td></td>
-		<td>Port:</td>
-		<td><input type="text" disabled="True" name="oHttpServerPort" value="80"></td>
-	</tr>
-	<tr id="oHttpArea" style="color:gray">
-		<td></td>
-		<td>User Name:</td>
-		<td><input type="text" disabled="True" name="oHttpUserName"></td>
-	</tr>
-	<tr id="oHttpArea" style="color:gray">
-		<td></td>
-		<td>Password:</td>
-		<td><input type="password" disabled="True" name="oHttpUserPasswd1">
-		<input type="password" disabled="True" name="oHttpUserPasswd2"></td>
-	</tr>
-	<tr>
-		<td>Connect via SOCKS proxy server</td>
-		<td><input type="checkbox" name="oUseSocksProxy" onclick="ChangeSocksProxyArea"></td>
-	</tr>
-	<tr id="oSocksArea" style="color:gray">
-		<td>SOCKS Proxy Server Configuration</td>
-		<td>Address:</td>
-		<td><input type="text" disabled="True" name="oSocksServerName"></td>
-	</tr>
-	<tr id="oSocksArea" style="color:gray">
-		<td></td>
-		<td>Port:</td>
-		<td><input type="text" disabled="True" name="oSocksServerPort" value="80"></td>
-	</tr>
-	<tr id="oSocksArea" style="color:gray">
-		<td></td>
-		<td>User Name:</td>
-		<td><input type="text" disabled="True" name="oSocksUserName"></td>
-	</tr>
-	<tr id="oSocksArea" style="color:gray">
-		<td></td>
-		<td>Password:</td>
-		<td><input type="password" disabled="True" name="oSocksUserPasswd1">
-		<input type="password" disabled="True" name="oSocksUserPasswd2"></td>
-	</tr>
-</table>
-<table>
-	<tr><td id="oSpacer" colspan="2" style="height: 74px"></td></tr>
-	<tr>
-		<td style="width: 450px"><input type="button" value="Generate MST" onclick="GenerateMST">
-		<input type="button" value="Reset the form" onclick="location.reload">
-		<input type="button" name="oOptionsButton" value="Advanced Options..." onclick="ChangeOptions" style="width: 150px">
-		</td>
-		<td><span id="oStatus">For full instructions and further 
-		help, please visit
-		<a href="http://n8felton.github.io/BOINC-MST-Creator" target="_blank">
-		http://n8felton.github.io/BOINC-MST-Creator</a>.</span></td>
-	</tr>
-</table>
-
+	</table>
+	<table id="oAdvanced">
+		<tr>
+			<td style="width: 303px">BOINC Activity</td>
+			<td colspan="2">
+			<input type="radio" name="oBoincActivity" value="1" />Run Always
+			<br />
+			<input type="radio" name="oBoincActivity" value="2" checked="true" />Run based on preferences (Default)
+			<br />
+			<input type="radio" name="oBoincActivity" value="3" />Suspend</td>
+		</tr>
+		<tr>
+			<td>Network Activity</td>
+			<td colspan="2">
+			<input type="radio" name="oNetworkActivity" value="1" />Always Available
+			<br />
+			<input type="radio" name="oNetworkActivity" value="2" checked="true" />Based on preferences (Default)
+			<br />
+			<input type="radio" name="oNetworkActivity" value="3" />Suspended</td>
+		</tr>
+		<tr>
+			<td>Connect via HTTP proxy server</td>
+			<td>
+				<input type="checkbox" name="oUseHttpProxy" onclick="ChangeHttpProxyArea" />
+			</td>
+		</tr>
+		<tr id="oHttpArea" style="color:gray">
+			<td>HTTP Proxy Server Configuration</td>
+			<td>Address:</td>
+			<td>
+				<input type="text" disabled="true" name="oHttpServerName" />
+			</td>
+		</tr>
+		<tr id="oHttpArea" style="color:gray">
+			<td></td>
+			<td>Port:</td>
+			<td>
+				<input type="text" disabled="true" name="oHttpServerPort" value="80" />
+			</td>
+		</tr>
+		<tr id="oHttpArea" style="color:gray">
+			<td></td>
+			<td>User Name:</td>
+			<td>
+				<input type="text" disabled="true" name="oHttpUserName" />
+			</td>
+		</tr>
+		<tr id="oHttpArea" style="color:gray">
+			<td></td>
+			<td>Password:</td>
+			<td>
+			<input type="password" disabled="true" name="oHttpUserPasswd1" /> 
+			<input type="password" disabled="true" name="oHttpUserPasswd2" /></td>
+		</tr>
+		<tr>
+			<td>Connect via SOCKS proxy server</td>
+			<td>
+				<input type="checkbox" name="oUseSocksProxy" onclick="ChangeSocksProxyArea" />
+			</td>
+		</tr>
+		<tr id="oSocksArea" style="color:gray">
+			<td>SOCKS Proxy Server Configuration</td>
+			<td>Address:</td>
+			<td>
+				<input type="text" disabled="true" name="oSocksServerName" />
+			</td>
+		</tr>
+		<tr id="oSocksArea" style="color:gray">
+			<td></td>
+			<td>Port:</td>
+			<td>
+				<input type="text" disabled="true" name="oSocksServerPort" value="80" />
+			</td>
+		</tr>
+		<tr id="oSocksArea" style="color:gray">
+			<td></td>
+			<td>User Name:</td>
+			<td>
+				<input type="text" disabled="true" name="oSocksUserName" />
+			</td>
+		</tr>
+		<tr id="oSocksArea" style="color:gray">
+			<td></td>
+			<td>Password:</td>
+			<td>
+			<input type="password" disabled="true" name="oSocksUserPasswd1" /> 
+			<input type="password" disabled="true" name="oSocksUserPasswd2" /></td>
+		</tr>
+	</table>
+	<table>
+		<tr>
+			<td id="oSpacer" colspan="2" style="height: 74px"></td>
+		</tr>
+		<tr>
+			<td style="width: 450px">
+			<input type="button" value="Generate MST" onclick="GenerateMST" /> 
+			<input type="button" value="Reset the form" onclick="location.reload" /> 
+			<input type="button" name="oOptionsButton" value="Advanced Options..." onclick="ChangeOptions"
+			style="width: 150px" /></td>
+			<td>
+				<span id="oStatus">For full instructions and further help, please visit 
+				<a href="http://n8felton.github.io/BOINC-MST-Creator"
+				target="_blank">http://n8felton.github.io/BOINC-MST-Creator</a>.</span>
+			</td>
+		</tr>
+	</table>
 </body>
-
 </html>
+
