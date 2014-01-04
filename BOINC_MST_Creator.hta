@@ -34,12 +34,14 @@ a:hover {
 </head>
 
 <script type="text/vbscript">
+CONST strDefaultProjectAccount = "www.worldcommunitygrid.org 0123456789abcdef0123456789abcdef"
+
 
 Sub Window_OnLoad
 	UpdateTitle
 	oAdvanced.style.display = "none"
 	window.resizeTo 925,595
-	oProjects.Value = "www.worldcommunitygrid.org 0123456789abcdef0123456789abcdef"
+	oProjects.Value = strDefaultProjectAccount & VbCrLf
 End Sub
 
 Sub UpdateTitle
@@ -106,39 +108,30 @@ Sub ChangeSocksProxyArea
 
 End Sub
 
-Sub GetXMLFiles
+Sub ImportProjects
 	Dim sData(1)
 	Set oFSO = CreateObject("Scripting.FileSystemObject")
-
-	On Error Resume Next
-	Set oDialog = CreateObject("UserAccounts.CommonDialog")
-	If Err = 0 Then 
-		oDialog.Filter = "BOINC Account Files (account_*.xml)|*account_*.xml"
-		oDialog.Flags = &H01004
-		If oDialog.ShowOpen <> 0 Then 
-		 With oFSO.OpenTextFile(oDialog.FileName, 1)
-			Do Until .AtEndOfStream or iFound = 2
-				sLine = .Readline
-				If InStr(sLine, "<master_url>") > 0 And InStr(sLine, "</master_url>") Then
-					sData(0) = Mid(sLine, InStr(sLine, "<master_url>") + 19, InStr(sLine, "</master_url>") - (InStr(sLine, "<master_url>") + 20))
-					iFound = iFound + 1
-				ElseIf InStr(sLine, "<authenticator>") > 0 And InStr(sLine, "</authenticator>") Then
-					sData(1) = Mid(sLine, InStr(sLine, "<authenticator>") + 15, 32)
-					iFound = iFound + 1
-				End If
-			Loop   
-			.Close
-		 End With
-		 If iFound = 2 Then
-			oProjects.Value = oProjects.Value & sData(0) & " " & sData(1) & vbCr
-		 Else
-			MsgBox "Unable extract the BOINC project data from the file. Please enter it manually.", _
-			 vbInformation, Document.Title
-		 End If
+	With oFSO.OpenTextFile(strXMLFileLocation.Value, 1)
+		Do Until .AtEndOfStream or iFound = 2
+			sLine = .Readline
+			If InStr(sLine, "<master_url>") > 0 And InStr(sLine, "</master_url>") Then
+				sData(0) = Mid(sLine, InStr(sLine, "<master_url>") + 19, InStr(sLine, "</master_url>") - (InStr(sLine, "<master_url>") + 20))
+				iFound = iFound + 1
+			ElseIf InStr(sLine, "<authenticator>") > 0 And InStr(sLine, "</authenticator>") Then
+				sData(1) = Mid(sLine, InStr(sLine, "<authenticator>") + 15, 32)
+				iFound = iFound + 1
+			End If
+		Loop   
+		.Close
+	End With
+	If iFound = 2 Then
+		If InStr(oProjects.Value, strDefaultProjectAccount) Then
+			ClearProjects
 		End If
+		oProjects.Value = oProjects.Value & sData(0) & " " & sData(1) & vbCr
 	Else
-		MsgBox "Unable to browse for a file on a non Windows XP PC. " & _
-			 "Please enter the BOINC project data manually.", vbInformation, Document.Title 
+		MsgBox "Unable extract the BOINC project data from the file. Please enter it manually.", _
+		vbInformation, Document.Title
 	End If
 End Sub
 
@@ -510,7 +503,7 @@ End Function
 		<tr>
 			<td>Path to BOINC.MSI file</td>
 			<td>
-				<input type="file" value="" size="85" name="oMsiFileLocation" />
+				<input type="file" value="" size="75" name="oMsiFileLocation" />
 			</td>
 		</tr>
 		<tr>
@@ -530,10 +523,14 @@ End Function
 			</td>
 		</tr>
 		<tr>
-			<td>(Enter only one project per line)</td>
+			<td></td>
+			<td><input type="button" value="Clear List" onclick="ClearProjects" /></td>
+		</tr>		
+		<tr>
+			<td>Import Projects from existing BOINC Account Files (account_*.xml)</td>
 			<td>
-			<input type="button" value="Import Projects from an existing BOINC installation..." onclick="GetXMLFiles" /> 
-			<input type="button" value="Clear List" onclick="ClearProjects" /></td>
+				<input type="file" value="" size="75" name="strXMLFileLocation" onChange="ImportProjects" />
+			</td>
 		</tr>
 		<tr>
 			<td>Location to install BOINC to</td>
