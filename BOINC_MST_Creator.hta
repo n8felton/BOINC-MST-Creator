@@ -381,12 +381,9 @@ Sub GenerateMST()
 					sDbCommand(iDbCommandCount) = "INSERT INTO Property (Property, Value) VALUES ('ENABLEUSEBYALLUSERS', '1')"
 				End If
 				If oProgramsMenuShortcut.Checked Then
-					iDbCommandCount = iDbCommandCount + 3
+					iDbCommandCount = iDbCommandCount + 1
 					ReDim Preserve sDbCommand(iDbCommandCount)
-					sDbCommand(iDbCommandCount - 2) = "DELETE FROM Shortcut WHERE Shortcut = 'BOINCManagerShortcut'"
-					sDbCommand(iDbCommandCount - 1) = "DELETE FROM Directory WHERE Directory = 'BOINCStartMenu'"
-					sDbCommand(iDbCommandCount) = "DELETE FROM Icon WHERE Name = 'BOINCMGRLink_B65C4A4D2B2A46CCA2D918164C6297B8.exe'"
-
+					sDbCommand(iDbCommandCount) = "UPDATE Property SET Value = " & Chr(34) & "0" & Chr(34) & " WHERE Property = 'ENABLESTARTMENUITEMS'"
 				End If
 
 				If oInstallType.Value = "Service" Then
