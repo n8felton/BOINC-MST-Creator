@@ -398,7 +398,7 @@ Sub GenerateMST()
 				If oInstallType.Value = "Service" Then
 						iDbCommandCount = iDbCommandCount + 1
 						ReDim Preserve sDbCommand(iDbCommandCount)
-						sDbCommand(iDbCommandCount) = "INSERT INTO Property (Property, Value) VALUES ('ENABLEPROTECTEDAPPLICATIONEXECUTION2', '1')"
+						sDbCommand(iDbCommandCount) = "INSERT INTO Property (Property, Value) VALUES ('ENABLEPROTECTEDAPPLICATIONEXECUTION3', '1')"
 				End If
 
 				For iLoop = 0 to UBound(sProjects,2)
