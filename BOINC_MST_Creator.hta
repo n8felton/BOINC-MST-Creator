@@ -375,12 +375,6 @@ Sub GenerateMST()
 
 				sDbCommand(iDbCommandCount) = "INSERT INTO InstallExecuteSequence (Action, Condition, Sequence) VALUES ('Set_client_state.xml', 'REMOVE<>""ALL""', '4325')"
 					
-					If sChecked(oEnableLaunchAtLogon) = 0 Then
-					iDbCommandCount = iDbCommandCount + 2
-					ReDim Preserve sDbCommand(iDbCommandCount)
-						sDbCommand(iDbCommandCount - 1) = "DELETE FROM Registry WHERE Registry = 'Registry5'"
-						sDbCommand(iDbCommandCount) = "DELETE FROM Registry WHERE Registry = 'Registry30'"
-					End If					
 				If oInstallType.Value = "Shared" Then
 					iDbCommandCount = iDbCommandCount + 1
 					ReDim Preserve sDbCommand(iDbCommandCount)
@@ -554,12 +548,6 @@ End Function
 			<td>Automatically enable the screensaver</td>
 			<td>
 				<input type="checkbox" name="oEnableScreensaver" />
-			</td>
-		</tr>
-		<tr>
-			<td>Automatically start BOINC when users sign on</td>
-			<td>
-				<input type="checkbox" name="oEnableLaunchAtLogon" />
 			</td>
 		</tr>
 		<tr>
