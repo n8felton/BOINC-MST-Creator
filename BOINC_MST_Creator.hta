@@ -423,13 +423,13 @@ Sub GenerateMST()
 
 				 'Writes remote_hosts.cfg file.
 					With oFSO.CreateTextFile(sRemoteHostsFile, True)
-					 .WriteLine(oAllowedHosts.Value & vbCr)
+					 .WriteLine(oAllowedHosts.Value)
 					 .Close
 					End With
 
-				 'Writes remote_hosts.cfg file.
+				 'Writes gui_rpc_auth.cfg file.
 					With oFSO.CreateTextFile(sGuiRpcAuthFile, True)
-					.WriteLine(oRemotePassword1.Value & vbCr)
+					.WriteLine(oRemotePassword1.Value)
 					 .Close
 					End With
 
