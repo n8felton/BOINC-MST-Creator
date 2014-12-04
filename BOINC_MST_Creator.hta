@@ -384,7 +384,7 @@ Sub GenerateMST()
 				If oProgramsMenuShortcut.Checked Then
 					iDbCommandCount = iDbCommandCount + 1
 					ReDim Preserve sDbCommand(iDbCommandCount)
-					sDbCommand(iDbCommandCount) = "UPDATE Property SET Value = " & Chr(34) & "0" & Chr(34) & " WHERE Property = 'ENABLESTARTMENUITEMS'"
+					sDbCommand(iDbCommandCount) = "UPDATE Property SET Value = '0' WHERE Property = 'ENABLESTARTMENUITEMS'"
 				End If
 
 				If oInstallType.Value = "Service" Then
