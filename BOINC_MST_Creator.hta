@@ -230,6 +230,7 @@ Sub GenerateMST()
 
 	 'Checks that a BOINC.MSI package has actually been selected. Error is generated if BOINC.msi is open.
 		On Error Resume Next
+		oStatus.InnerText = "Verifying MSI..."
 		Set oOriginalDatabase = oInstaller.OpenDatabase(oMsiFileLocation.Value, msiOpenDatabaseModeReadOnly)
 		If err <> 0 Then
 		 MsgBox "Unable to open BOINC.msi. Please check that not other application is using " & vbCr & _
@@ -259,7 +260,7 @@ Sub GenerateMST()
 		 If Not oFSO.FolderExists(sProgramFolder) Then 
 			MsgBox "The expanded subdirectory " & sProgramFolder & " could not be found.", vbCritical, Document.Title
 		 Else
-
+			oStatus.InnerText = "Generating MST..."
 			If oFSO.FileExists(sFolder & "BOINC.mst") Then 
 				iFileResponse = MsgBox("The BOINC.mst file already exists. Do you want to overwrite it?", _
 									  vbQuestion & vbYesNoCancel, Document.Title)
@@ -464,6 +465,7 @@ Sub GenerateMST()
 				oFSO.DeleteFile sFolder & "TMPBOINC.msi", True
 
 				MsgBox "The MST file has been successfully created.", vbInformation, Document.Title
+				oStatus.InnerText = "The MST file has been successfully created."
 
 			End If
 		 End If 
