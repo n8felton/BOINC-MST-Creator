@@ -505,6 +505,12 @@ End Function
 			</td>
 		</tr>
 		<tr>
+			<td>Import Projects from existing BOINC Account Files (account_*.xml)</td>
+			<td>
+				<input type="file" value="" size="75" name="strXMLFileLocation" onChange="ImportProjects" />
+			</td>
+		</tr>		
+		<tr>
 			<td>BOINC Projects URLs and account keys
 			<br />
 			<i>The example project shown has a dummy
@@ -518,12 +524,6 @@ End Function
 			<td></td>
 			<td><input type="button" value="Clear List" onclick="ClearProjects" /></td>
 		</tr>		
-		<tr>
-			<td>Import Projects from existing BOINC Account Files (account_*.xml)</td>
-			<td>
-				<input type="file" value="" size="75" name="strXMLFileLocation" onChange="ImportProjects" />
-			</td>
-		</tr>
 		<tr>
 			<td>Location to install BOINC to</td>
 			<td>
