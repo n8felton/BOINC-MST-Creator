@@ -1,12 +1,15 @@
 ﻿<html>
 
 <head>
-<title>BOINC MST Creator - Version 1.3.1</title>
+<title>BOINC MST Creator</title>
 <HTA:APPLICATION
-     ID="oHTA"
-     APPLICATIONNAME="BOINC MST Creator"
-     ICON="http://www.thelazyslug.com/images/icon.ico"
-     SINGLEINSTANCE="yes">
+	ID="oHTA"
+	APPLICATIONNAME="BOINC MST Creator"
+	ICON="http://n8felton.github.io/BOINC-MST-Creator/images/icon.ico"
+	MAXIMIZEBUTTON="no"
+	SINGLEINSTANCE="yes"
+	VERSION="1.4"
+ />
 <style type="text/css">
 body {
 	background-color: #EEEEEE;
@@ -31,719 +34,673 @@ a:hover {
 </head>
 
 <script type="text/vbscript">
+CONST strDefaultProjectAccount = "www.worldcommunitygrid.org 0123456789abcdef0123456789abcdef"
+
 
 Sub Window_OnLoad
-    oAdvanced.style.display = "none"
-    window.resizeTo 970,595
-    oProjects.Value = "www.worldcommunitygrid.org 0123456789abcdef0123456789abcdef" & vbCrlf & _
-                      "boinc.bakerlab.org/rosetta 0123456789abcdef0123456789abcdef" & vbCrlf
+	UpdateTitle
+	oAdvanced.style.display = "none"
+	window.resizeTo 925,595
+	oProjects.Value = strDefaultProjectAccount & VbCrLf
+End Sub
+
+Sub UpdateTitle
+	strTitle = document.title
+	strTitle = strTitle & " - Version " & oHTA.version
+	document.title = strTitle	
 End Sub
 
 Sub ClearProjects
-    oProjects.Value = ""
-End Sub
-
-Sub ServiceSettings
-   If oInstallType.Value = "Service" Then 
-      oServiceDomainUserName.Value = ""
-      bDisabled = False
-      sColour = ""
-   Else 
-      oServiceDomainUserName.Value = "Service install only"
-      oServicePassword1.Value = ""
-      oServicePassword2.Value = ""
-      oPermissions.Value = ""
-      bDisabled = True
-      sColour = "Gray"
-   End If
-   oUsername.Style.Color = sColour
-   oPassword.Style.Color = sColour
-   oPermissionsArea.Style.Color = sColour
-   oServiceDomainUserName.Disabled = bDisabled
-   oServicePassword1.Disabled = bDisabled
-   oServicePassword2.Disabled = bDisabled
-   oPermissions.Disabled = bDisabled
+	oProjects.Value = ""
 End Sub
 
 Sub ChangeOptions
-   If oAdvanced.Style.Display = "none" Then
-      oStandard.Style.Display = "none"
-      oAdvanced.Style.Display = "inline"
-      oSpacer.Style.Height = "96px"
-      oOptionsButton.Value = "Standard Options..."
-   Else
-      oAdvanced.Style.Display = "none"
-      oStandard.Style.Display = "inline"
-      oSpacer.Style.Height = "20px"
-      oOptionsButton.Value = "Advanced Options..."
-   End If
+	If oAdvanced.Style.Display = "none" Then
+		oStandard.Style.Display = "none"
+		oAdvanced.Style.Display = "inline"
+		oSpacer.Style.Height = "96px"
+		oOptionsButton.Value = "Standard Options..."
+	Else
+		oAdvanced.Style.Display = "none"
+		oStandard.Style.Display = "inline"
+		oSpacer.Style.Height = "74px"
+		oOptionsButton.Value = "Advanced Options..."
+	End If
 End Sub
 
 Sub ChangeHttpProxyArea
-   If oUseHttpProxy.Checked Then 
-      bDisabled = False
-      sColour = ""
-   Else
-      bDisabled = True
-      sColour = "Gray"
-   End If
-   For Each oArea in oHttpArea
-      oArea.Style.Color = sColour
-   Next
+	If oUseHttpProxy.Checked Then 
+		bDisabled = False
+		sColour = ""
+	Else
+		bDisabled = True
+		sColour = "Gray"
+	End If
+	For Each oArea in oHttpArea
+		oArea.Style.Color = sColour
+	Next
 
-   oHttpServerName.Disabled = bDisabled
-   oHttpServerPort.Disabled = bDisabled
-   oHttpUserName.Disabled = bDisabled
-   oHttpUserPasswd1.Disabled = bDisabled
-   oHttpUserPasswd2.Disabled = bDisabled
+	oHttpServerName.Disabled = bDisabled
+	oHttpServerPort.Disabled = bDisabled
+	oHttpUserName.Disabled = bDisabled
+	oHttpUserPasswd1.Disabled = bDisabled
+	oHttpUserPasswd2.Disabled = bDisabled
 
 End Sub
 
 Sub ChangeSocksProxyArea
-   If oUseSocksProxy.Checked Then 
-      bDisabled = False
-      sColour = ""
-   Else
-      bDisabled = True
-      sColour = "Gray"
-   End If
-   For Each oArea in oSocksArea
-      oArea.Style.Color = sColour
-   Next
+	If oUseSocksProxy.Checked Then 
+		bDisabled = False
+		sColour = ""
+	Else
+		bDisabled = True
+		sColour = "Gray"
+	End If
+	For Each oArea in oSocksArea
+		oArea.Style.Color = sColour
+	Next
 
-   oSocksServerName.Disabled = bDisabled
-   oSocksServerPort.Disabled = bDisabled
-   oSocksUserName.Disabled = bDisabled
-   oSocksUserPasswd1.Disabled = bDisabled
-   oSocksUserPasswd2.Disabled = bDisabled
+	oSocksServerName.Disabled = bDisabled
+	oSocksServerPort.Disabled = bDisabled
+	oSocksUserName.Disabled = bDisabled
+	oSocksUserPasswd1.Disabled = bDisabled
+	oSocksUserPasswd2.Disabled = bDisabled
 
 End Sub
 
-Sub GetXMLFiles
-   Dim sData(1)
-   Set oFSO = CreateObject("Scripting.FileSystemObject")
-
-   On Error Resume Next
-   Set oDialog = CreateObject("UserAccounts.CommonDialog")
-   If Err = 0 Then 
-      oDialog.Filter = "BOINC Account Files (account_*.xml)|*account_*.xml"
-      oDialog.Flags = &H01004
-      If oDialog.ShowOpen <> 0 Then 
-         With oFSO.OpenTextFile(oDialog.FileName, 1)
-            Do Until .AtEndOfStream or iFound = 2
-               sLine = .Readline
-               If InStr(sLine, "<master_url>") > 0 And InStr(sLine, "</master_url>") Then
-                  sData(0) = Mid(sLine, InStr(sLine, "<master_url>") + 19, InStr(sLine, "</master_url>") - (InStr(sLine, "<master_url>") + 20))
-                  iFound = iFound + 1
-               ElseIf InStr(sLine, "<authenticator>") > 0 And InStr(sLine, "</authenticator>") Then
-                  sData(1) = Mid(sLine, InStr(sLine, "<authenticator>") + 15, 32)
-                  iFound = iFound + 1
-               End If
-            Loop   
-            .Close
-         End With
-         If iFound = 2 Then
-            oProjects.Value = oProjects.Value & sData(0) & " " & sData(1) & vbCr
-         Else
-            MsgBox "Unable extract the BOINC project data from the file. Please enter it manually.", _
-             vbInformation, Document.Title
-         End If
-      End If
-   Else
-      MsgBox "Unable to browse for a file on a non Windows XP PC. " & _
-             "Please enter the BOINC project data manually.", vbInformation, Document.Title 
-   End If
-End Sub
-
-Sub GetMsiFile
-   On Error Resume Next
-   Set oDialog = CreateObject("UserAccounts.CommonDialog")
-   If Err = 0 Then 
-      oDialog.Filter = "MSI Database Files (*.MSI)|*.msi"
-      oDialog.Flags = &H1004
-      If oDialog.ShowOpen <> 0 Then oMsiFileLocation.Value = oDialog.FileName
-   Else
-      MsgBox "Unable to browse for a file on a non Windows XP PC. " & _
-             "Please enter the value manually", vbInformation, Document.Title 
-   End If
+Sub ImportProjects
+	Dim sData(1)
+	Set oFSO = CreateObject("Scripting.FileSystemObject")
+	With oFSO.OpenTextFile(strXMLFileLocation.Value, 1)
+		Do Until .AtEndOfStream or iFound = 2
+			sLine = .Readline
+			If InStr(sLine, "<master_url>") > 0 And InStr(sLine, "</master_url>") Then
+				sData(0) = Mid(sLine, InStr(sLine, "<master_url>") + 19, InStr(sLine, "</master_url>") - (InStr(sLine, "<master_url>") + 20))
+				iFound = iFound + 1
+			ElseIf InStr(sLine, "<authenticator>") > 0 And InStr(sLine, "</authenticator>") Then
+				sData(1) = Mid(sLine, InStr(sLine, "<authenticator>") + 15, 32)
+				iFound = iFound + 1
+			End If
+		Loop   
+		.Close
+	End With
+	If iFound = 2 Then
+		If InStr(oProjects.Value, strDefaultProjectAccount) Then
+			ClearProjects
+		End If
+		oProjects.Value = oProjects.Value & sData(0) & " " & sData(1) & vbCr
+	Else
+		MsgBox "Unable extract the BOINC project data from the file. Please enter it manually.", _
+		vbInformation, Document.Title
+	End If
 End Sub
 
 Sub GenerateMST()
-   Dim sDbCommand()
-   Dim sProjectsData
-   Dim sProjects()
+	Dim sDbCommand()
+	Dim sProjectsData
+	Dim sProjects()
 
-   Const msiOpenDatabaseModeReadOnly = 0
-   Const msiOpenDatabaseModeDirect = 2
-   Const msiTransformErrorNone = 0
-   Const msiTransformValidationNone = 0
-   Const msiViewModifyAssign         = 3
-   Const msiRunModeSourceShortNames = 9
+	Const msiOpenDatabaseModeReadOnly = 0
+	Const msiOpenDatabaseModeDirect = 2
+	Const msiTransformErrorNone = 0
+	Const msiTransformValidationNone = 0
+	Const msiViewModifyAssign         = 3
+	Const msiRunModeSourceShortNames = 9
 
-   Set oFSO = CreateObject("Scripting.FileSystemObject")
-   Set oHTTP = CreateObject("Microsoft.XMLHTTP") 
-   Set oInstaller = CreateObject("WindowsInstaller.Installer")
+	Set oFSO = CreateObject("Scripting.FileSystemObject")
+	Set oHTTP = CreateObject("Microsoft.XMLHTTP") 
+	Set oInstaller = CreateObject("WindowsInstaller.Installer")
 
-   If oInstallType.Value = "Service" And oServiceDomainUserName.Value <> "" Then
-      On Error Resume Next
-      Set oAccount = GetObject("WinNT://" & Replace(oServiceDomainUserName.Value, "\", "/"))
-      If err <> 0 Or InStr(oServiceDomainUserName.Value, "\") = 0 Then
-         MsgBox "Invalid Username. Please re-enter a valid one." & vbCr & _
-                "Remember to include your domain or computer name. Example: Domain\Username", _
-                 vbCritical, Document.Title
-         Exit Sub
-      End If
-      On Error Goto 0
-   End If
-   
-   If Not oFSO.FileExists(oMsiFileLocation.Value) Then
-      MsgBox "The msi file could not be found in the same directory as this script.", vbCritical, Document.Title
-   ElseIf InStr(oProjects.Value," ") = 0 Then 
-      MsgBox "You have not entered any valid BOINC project URLs", vbCritical, Document.Title
-   ElseIf oServicePassword1.Value <> oServicePassword2.Value And oServiceDomainUserName.Value <> "" Then
-      MsgBox "The user passwords do not match. Please re-enter them", vbCritical, Document.Title
-      oServicePassword1.Value = ""
-      oServicePassword2.Value = ""
-   ElseIf oRemotePassword1.Value <> oRemotePassword2.Value Then
-      MsgBox "The remote access passwords do not match. Please re-enter them", vbCritical, Document.Title
-      oRemotePassword1.Value = ""
-      oRemotePassword2.Value = ""
-   ElseIf oHttpServerPort.Value = "" Or Not bIsNumber(oHttpServerPort.Value) Then 
-      MsgBox "The HTTP server port must numeric. Please re-enter it", vbCritical, Document.Title
-      oHttpServerPort.Value = "80"
-   ElseIf oSocksServerPort.Value = "" Or Not bIsNumber(oSocksServerPort.Value) Then 
-      MsgBox "The SOCKS server port must numeric. Please re-enter it", vbCritical, Document.Title
-      oSocksServerPort.Value = "80"
-   ElseIf oHttpUserPasswd1.Value <> oHttpUserPasswd2.Value Then 
-      MsgBox "The HTTP proxy passwords do not match. Please re-enter them", vbCritical, Document.Title
-      oHttpUserPasswd1.Value = ""
-      oHttpUserPasswd2.Value = ""
-   ElseIf oSocksUserPasswd1.Value <> oSocksUserPasswd2.Value Then 
-      MsgBox "The SOCKS proxy passwords do not match. Please re-enter them", vbCritical, Document.Title
-      oSocksUserPasswd1.Value = ""
-      oSocksUserPasswd2.Value = ""
-   Else
+	
+	If Not oFSO.FileExists(oMsiFileLocation.Value) Then
+		MsgBox "The msi file could not be found in the same directory as this script.", vbCritical, Document.Title
+	ElseIf InStr(oProjects.Value," ") = 0 Then 
+		MsgBox "You have not entered any valid BOINC project URLs", vbCritical, Document.Title
+	ElseIf oRemotePassword1.Value <> oRemotePassword2.Value Then
+		MsgBox "The remote access passwords do not match. Please re-enter them", vbCritical, Document.Title
+		oRemotePassword1.Value = ""
+		oRemotePassword2.Value = ""
+	ElseIf oHttpServerPort.Value = "" Or Not bIsNumber(oHttpServerPort.Value) Then 
+		MsgBox "The HTTP server port must numeric. Please re-enter it", vbCritical, Document.Title
+		oHttpServerPort.Value = "80"
+	ElseIf oSocksServerPort.Value = "" Or Not bIsNumber(oSocksServerPort.Value) Then 
+		MsgBox "The SOCKS server port must numeric. Please re-enter it", vbCritical, Document.Title
+		oSocksServerPort.Value = "80"
+	ElseIf oHttpUserPasswd1.Value <> oHttpUserPasswd2.Value Then 
+		MsgBox "The HTTP proxy passwords do not match. Please re-enter them", vbCritical, Document.Title
+		oHttpUserPasswd1.Value = ""
+		oHttpUserPasswd2.Value = ""
+	ElseIf oSocksUserPasswd1.Value <> oSocksUserPasswd2.Value Then 
+		MsgBox "The SOCKS proxy passwords do not match. Please re-enter them", vbCritical, Document.Title
+		oSocksUserPasswd1.Value = ""
+		oSocksUserPasswd2.Value = ""
+	Else
 
-     'Checks the validity of the manually entered URLS and Account Keys
-      iDim = -1
-      sProjectsData = Split(oProjects.Value, vbCrlf)
-      For iCount = 0 to UBound(sProjectsData)
-         If sProjectsData(iCount) <> "" Then
-            iDim = iDim + 1
-            ReDim Preserve sProjects(1, iDim)
-            On Error Resume Next
-            sProjects(0, iDim) = Left(sProjectsData(iCount), Instr(sProjectsData(iCount)," ") - 1)
-            sProjects(1, iDim) = Mid(sProjectsData(iCount), Instr(sProjectsData(iCount)," ") + 1)
-            If UCase(Left(sProjects(0, iDim), 7)) <> "HTTP://" Then sProjects(0, iDim) = "http://" & sProjects(0, iDim)
-            If Right(sProjects(0, iDim), 1) = "/" Then sProjects(0, iDim) = Left(sProjects(0, iDim), Len(sProjects(0, iDim)) - 1)
-            oStatus.InnerText = "Checking BOINC Project URL " & sProjects(0, iDim) & "..."
-            Sleep 0.25
-            oHTTP.open "GET", sProjects(0, iDim), True
-            oHTTP.send
-            Do
-               Sleep 1
-               iWait = iWait + 1
-            Loop Until oHTTP.ReadyState = 4 or iWait > 10
-            oStatus.InnerText = ""
-            If InStr(LCase(oHTTP.ResponseText),"<scheduler>") = 0 Then
-               Select Case MsgBox(sProjects(0, iDim) & " can not be validated. Do you still wish to use it?", vbCritical + vbYesNoCancel, Document.Title)
-               Case 2
-                  Exit Sub
-               Case 7
-                  iDim = iDim - 1
-                  ReDim Preserve sProjects(1, iDim)
-               End Select
-            End If
-            If Len(sProjects(1, iDim)) <> 32 or sProjects(1, iDim) = "0123456789abcdef0123456789abcdef" Then
-               MsgBox "Please enter a valid BOINC Account Key for " & sProjects(0, iDim), vbCritical, Document.Title
-               Exit Sub
-            End If
-            On Error Goto 0
-         End If
-      Next
-      If iDim = -1 Then 
-         MsgBox "There are no valid project URLs. Please check your entires.", vbCritical, Document.Title
-         Exit Sub
-      End If
-      For iLoop = 0 to UBound(sProjects,2)
-         iFound = 0
-         For iCount = 0 to UBound(sProjects,2)
-            If sProjects(0, iLoop) = sProjects(0, iCount) Then iFound = iFound + 1
-         Next
-         If iFound > 1 Then
-            MsgBox "Project URL " & sProjects(0, iLoop) & " has been entered more than once. Please check your entires.", vbCritical, Document.Title
-            Exit Sub
-         End If
-      Next
+	 'Checks the validity of the manually entered URLS and Account Keys
+		iDim = -1
+		sProjectsData = Split(oProjects.Value, vbCrlf)
+		For iCount = 0 to UBound(sProjectsData)
+		 If sProjectsData(iCount) <> "" Then
+			iDim = iDim + 1
+			ReDim Preserve sProjects(1, iDim)
+			On Error Resume Next
+			sProjects(0, iDim) = Left(sProjectsData(iCount), Instr(sProjectsData(iCount)," ") - 1)
+			sProjects(1, iDim) = Mid(sProjectsData(iCount), Instr(sProjectsData(iCount)," ") + 1)
+			If UCase(Left(sProjects(0, iDim), 7)) <> "HTTP://" Then sProjects(0, iDim) = "http://" & sProjects(0, iDim)
+			If Right(sProjects(0, iDim), 1) = "/" Then sProjects(0, iDim) = Left(sProjects(0, iDim), Len(sProjects(0, iDim)) - 1)
+			oStatus.InnerText = "Checking BOINC Project URL " & sProjects(0, iDim) & "..."
+			Sleep 0.25
+			oHTTP.open "GET", sProjects(0, iDim), True
+			oHTTP.send
+			Do
+				Sleep 1
+				iWait = iWait + 1
+			Loop Until oHTTP.ReadyState = 4 or iWait > 10
+			oStatus.InnerText = ""
+			If InStr(LCase(oHTTP.ResponseText),"<scheduler>") = 0 Then
+				Select Case MsgBox(sProjects(0, iDim) & " can not be validated. Do you still wish to use it?", vbCritical + vbYesNoCancel, Document.Title)
+				Case 2
+					Exit Sub
+				Case 7
+					iDim = iDim - 1
+					ReDim Preserve sProjects(1, iDim)
+				End Select
+			End If
+			If Len(sProjects(1, iDim)) <> 32 or sProjects(1, iDim) = "0123456789abcdef0123456789abcdef" Then
+				MsgBox "Please enter a valid BOINC Account Key for " & sProjects(0, iDim), vbCritical, Document.Title
+				Exit Sub
+			End If
+			On Error Goto 0
+		 End If
+		Next
+		If iDim = -1 Then 
+		 MsgBox "There are no valid project URLs. Please check your entires.", vbCritical, Document.Title
+		 Exit Sub
+		End If
+		For iLoop = 0 to UBound(sProjects,2)
+		 iFound = 0
+		 For iCount = 0 to UBound(sProjects,2)
+			If sProjects(0, iLoop) = sProjects(0, iCount) Then iFound = iFound + 1
+		 Next
+		 If iFound > 1 Then
+			MsgBox "Project URL " & sProjects(0, iLoop) & " has been entered more than once. Please check your entires.", vbCritical, Document.Title
+			Exit Sub
+		 End If
+		Next
 
-     'Checks that a BOINC.MSI package has actually been selected. Error is generated if BOINC.msi is open.
-      On Error Resume Next
-      Set oOriginalDatabase = oInstaller.OpenDatabase(oMsiFileLocation.Value, msiOpenDatabaseModeReadOnly)
-      If err <> 0 Then
-         MsgBox "Unable to open BOINC.msi. Please check that not other application is using " & vbCr & _
-                "it at the moment. (Eg: Orca)", vbCritical, Document.Title
-         Exit Sub
-      End If
-      On Error Goto 0
-      
-      With oOriginalDatabase.OpenView("SELECT `Value` FROM `Property` WHERE `Property`='ProductName'")
-         .Execute
-         Set oRecord = .Fetch
-         sTempProperty = oRecord.StringData(1)
-         .Close
-      End With
-      If InStr(sTempProperty, "BOINC") = 0 Then
-         MsgBox "The MSI file is not a BOINC installer. Please reselect the MSI file.", vbCritical, Document.Title
-      Else
+	 'Checks that a BOINC.MSI package has actually been selected. Error is generated if BOINC.msi is open.
+		On Error Resume Next
+		oStatus.InnerText = "Verifying MSI..."
+		Set oOriginalDatabase = oInstaller.OpenDatabase(oMsiFileLocation.Value, msiOpenDatabaseModeReadOnly)
+		If err <> 0 Then
+		 MsgBox "Unable to open BOINC.msi. Please check that not other application is using " & vbCr & _
+				"it at the moment. (Eg: Orca)", vbCritical, Document.Title
+		 Exit Sub
+		End If
+		On Error Goto 0
+		
+		With oOriginalDatabase.OpenView("SELECT `Value` FROM `Property` WHERE `Property`='ProductName'")
+		 .Execute
+		 Set oRecord = .Fetch
+		 sTempProperty = oRecord.StringData(1)
+		 .Close
+		End With
+		If InStr(sTempProperty, "BOINC") = 0 Then
+		 MsgBox "The MSI file is not a BOINC installer. Please reselect the MSI file.", vbCritical, Document.Title
+		Else
 
-         sFolder = Left(oMsiFileLocation.Value, InStrRev(oMsiFileLocation.Value, "\"))
+		 sFolder = Left(oMsiFileLocation.Value, InStrRev(oMsiFileLocation.Value, "\"))
+		 
+		If oArch(0).Checked Then 'x86 Architechture
+			sProgramFolder =  sFolder & "program files\BOINC"
+		ElseIf oArch(1).Checked Then ' x64 Architechture
+			sProgramFolder =  sFolder & "program files 64\BOINC"
+		End If
 
-         If Not oFSO.FolderExists(sFolder & "program files\BOINC") Then 
-            MsgBox "The expanded subdirectory 'program files\BOINC' could not be found.", vbCritical, Document.Title
-         Else
+		 If Not oFSO.FolderExists(sProgramFolder) Then 
+			MsgBox "The expanded subdirectory " & sProgramFolder & " could not be found.", vbCritical, Document.Title
+		 Else
+			oStatus.InnerText = "Generating MST..."
+			If oFSO.FileExists(sFolder & "BOINC.mst") Then 
+				iFileResponse = MsgBox("The BOINC.mst file already exists. Do you want to overwrite it?", _
+									  vbQuestion & vbYesNoCancel, Document.Title)
 
-            If oFSO.FileExists(sFolder & "BOINC.mst") Then 
-               iFileResponse = MsgBox("The BOINC.mst file already exists. Do you want to overwrite it?", _
-                                      vbQuestion & vbYesNoCancel, Document.Title)
+				If iFileResponse = vbCancel Then
+					Exit Sub
+				ElseIf iFileResponse = vbYes Then
+					oFSO.DeleteFile sFolder & "BOINC.mst", True
+				End If
+			End If
 
-               If iFileResponse = vbCancel Then
-                  Exit Sub
-               ElseIf iFileResponse = vbYes Then
-                  oFSO.DeleteFile sFolder & "BOINC.mst", True
-               End If
-            End If
+			If iFileResponse = vbYes Or iFileResponse = 0 Then
 
-            If iFileResponse = vbYes Or iFileResponse = 0 Then
+				sRemoteHostsFile = sFolder & "CommonAppData\BOINC\remote_hosts.cfg"
+				sGuiRpcAuthFile = sFolder & "CommonAppData\BOINC\gui_rpc_auth.cfg"
 
-               sRemoteHostsFile = sFolder & "program files\BOINC\remote_hosts.cfg"
-               sGuiRpcAuthFile = sFolder & "program files\BOINC\gui_rpc_auth.cfg"
+			  'Create Custom Action script for modifying or creating the client_state.xml file
+				sScript = "sF=Array(""user_run_request"",""user_network_request"",""use_http_proxy"",""use_http_auth"",""use_socks_proxy""," & _
+							"""socks_version"",""socks_server_name"",""socks_server_port"",""http_server_name"",""http_server_port""," & _
+							"""socks5_user_name"",""socks5_user_passwd"",""http_user_name"",""http_user_passwd"",""DUMMY_ELEMENT"")" & vbCrlf & "sD=Array("
 
-              'Create Custom Action script for modifying or creating the client_state.xml file
-               sScript = "sF=Array(""user_run_request"",""user_network_request"",""use_http_proxy"",""use_http_auth"",""use_socks_proxy""," & _
-                            """socks_version"",""socks_server_name"",""socks_server_port"",""http_server_name"",""http_server_port""," & _
-                            """socks5_user_name"",""socks5_user_passwd"",""http_user_name"",""http_user_passwd"",""DUMMY_ELEMENT"")" & vbCrlf & "sD=Array("
+				If oBoincActivity(0).Checked Then
+					sScript = sScript & """1"","
+				ElseIf oBoincActivity(1).Checked Then
+					sScript = sScript & """2"","
+				Else
+					sScript = sScript & """3"","
+				End If
 
-               If oBoincActivity(0).Checked Then
-                  sScript = sScript & """1"","
-               ElseIf oBoincActivity(1).Checked Then
-                  sScript = sScript & """2"","
-               Else
-                  sScript = sScript & """3"","
-               End If
+				If oNetworkActivity(0).Checked Then
+					sScript = sScript & """1"","
+				ElseIf oNetworkActivity(1).Checked Then
+					sScript = sScript & """2"","
+				Else
+					sScript = sScript & """3"","
+				End If
 
-               If oNetworkActivity(0).Checked Then
-                  sScript = sScript & """1"","
-               ElseIf oNetworkActivity(1).Checked Then
-                  sScript = sScript & """2"","
-               Else
-                  sScript = sScript & """3"","
-               End If
+				If oUseHttpProxy.Checked Then sScript = sScript & """1""," Else sScript = sScript & """"","               
+				If oHttpUserName <> "" Or oHttpUserPasswd1 <> "" Then sScript = sScript & """1""," Else sScript = sScript & """"","
+				If oUseSocksProxy.Checked Then sScript = sScript & """1""," Else sScript = sScript & """"","
+				If oSocksUserName <> "" Or sSocksUserPasswd1 <> "" Then sScript = sScript & """5""," Else sScript = sScript & """4"","
 
-               If oUseHttpProxy.Checked Then sScript = sScript & """1""," Else sScript = sScript & """"","               
-               If oHttpUserName <> "" Or oHttpUserPasswd1 <> "" Then sScript = sScript & """1""," Else sScript = sScript & """"","
-               If oUseSocksProxy.Checked Then sScript = sScript & """1""," Else sScript = sScript & """"","
-               If oSocksUserName <> "" Or sSocksUserPasswd1 <> "" Then sScript = sScript & """5""," Else sScript = sScript & """4"","
+				sScript = sScript & """" & oSocksServerName.Value & """,""" & oSocksServerPort.Value & """,""" & oHttpServerName.Value & """,""" _
+				& oHttpServerPort.Value & """,""" & oSocksUserName.Value & """,""" & oSocksUserPasswd1.Value & """,""" & oHttpUserName.Value & """,""" _
+				& oHttpUserPasswd1.Value & """)" & vbCrlf
 
-               sScript = sScript & """" & oSocksServerName.Value & """,""" & oSocksServerPort.Value & """,""" & oHttpServerName.Value & """,""" _
-                & oHttpServerPort.Value & """,""" & oSocksUserName.Value & """,""" & oSocksUserPasswd1.Value & """,""" & oHttpUserName.Value & """,""" _
-                & oHttpUserPasswd1.Value & """)" & vbCrlf
+				sScript = sScript & _
+				"sP=session.Property(""INSTALLDIR"")&""client_state.xml"":sT=""proxy_info"":sH=""<""" & vbCrlf & _
+				"Set oFSO=CreateObject(""Scripting.FileSystemObject""):Set oX=CreateObject(""Microsoft.XMLDOM"")" & vbCrlf & _
+				"oX.Async=0" & vbCrlf & _
+				"If oX.Load(sP) Then" & vbCrlf & _
+				" On Error Resume Next" & vbCrlf & _
+				" For iW=2 To 4" & vbCrlf & _
+				"  oX.getElementsByTagName(sT)(0).removeChild(oX.getElementsByTagName(sF(iW))(0))" & vbCrlf & _
+				" Next" & vbCrlf & _
+				" sO=Split(oX.transformNode(oX),vbcrlf)" & vbCrlf & _
+				" With oFSO.OpenTextFile(sP,2,-1)" & vbCrlf & _
+				"  For iL=0 To UBound(sO)" & vbCrlf & _
+				"   If InStr(sO(iL),sF(iC))>0 Then" & vbCrlf & _
+				"    .WriteLine sH&sF(iC)&"">""&sD(iC)&""</""&sF(iC)&"">"":iC=iC+1" & vbCrlf & _
+				"   ElseIf InStr(sO(iL),""<""&sT&"">"")>0 Then" & vbCrlf & _
+				"    .WriteLine""<""&sT&"">"":sH=""    <""" & vbCrlf & _
+				"    For iC=2 To 4" & vbCrlf & _
+				"     If sD(iC)=""1"" Then .WriteLine sH&sF(iC)&""/>""" & vbCrlf & _
+				"    Next" & vbCrlf & _
+				"   Else" & vbCrlf & _
+				"    .WriteLine sO(iL)" & vbCrlf & _
+				"   End If" & vbCrlf & _
+				"  Next" & vbCrlf &_
+				"  .Close" & vbCrlf & _
+				" End With" & vbCrlf & _
+				"Else" & vbCrlf & _
+				" With oFSO.OpenTextFile(sP,2,-1)" & vbCrlf & _
+				"  .WriteLine""<client_state>""" & vbCrlf & _
+				"  For iC=0 to 13" & vbCrlf & _
+				"   If iC=2 Then .WriteLine""<""&sT&"">"":sH=""    <""" & vbCrlf & _
+				"   If iC<2 Or iC>4 Then .WriteLine sH&sF(iC)&"">""&sD(iC)&""</""&sF(iC)&"">""Else If sD(iC)=""1"" Then .WriteLine sH&sF(iC)&""/>""" & vbCrlf & _
+				"  Next" & vbCrlf & _
+				"  .WriteLine""</""&sT&"">""&vbCrlf&""</client_state>""" & vbCrlf & _
+				"  .Close" & vbCrlf & _
+				" End With" & vbCrlf & _
+				"End If" & vbCrlf
+				
+				On Error Resume Next
+				oFSO.DeleteFile sProgramFolder & "\*account_*.xml", True
+				On Error Goto 0
+				If oFSO.FileExists(sRemoteHostsFile) Then oFSO.DeleteFile sRemoteHostsFile, True
+				If oFSO.FileExists(sGuiRpcAuthFile) Then oFSO.DeleteFile sGuiRpcAuthFile, True
 
-               sScript = sScript & _
-                "sP=session.Property(""INSTALLDIR"")&""client_state.xml"":sT=""proxy_info"":sH=""<""" & vbCrlf & _
-                "Set oFSO=CreateObject(""Scripting.FileSystemObject""):Set oX=CreateObject(""Microsoft.XMLDOM"")" & vbCrlf & _
-                "oX.Async=0" & vbCrlf & _
-                "If oX.Load(sP) Then" & vbCrlf & _
-                " On Error Resume Next" & vbCrlf & _
-                " For iW=2 To 4" & vbCrlf & _
-                "  oX.getElementsByTagName(sT)(0).removeChild(oX.getElementsByTagName(sF(iW))(0))" & vbCrlf & _
-                " Next" & vbCrlf & _
-                " sO=Split(oX.transformNode(oX),vbcrlf)" & vbCrlf & _
-                " With oFSO.OpenTextFile(sP,2,-1)" & vbCrlf & _
-                "  For iL=0 To UBound(sO)" & vbCrlf & _
-                "   If InStr(sO(iL),sF(iC))>0 Then" & vbCrlf & _
-                "    .WriteLine sH&sF(iC)&"">""&sD(iC)&""</""&sF(iC)&"">"":iC=iC+1" & vbCrlf & _
-                "   ElseIf InStr(sO(iL),""<""&sT&"">"")>0 Then" & vbCrlf & _
-                "    .WriteLine""<""&sT&"">"":sH=""    <""" & vbCrlf & _
-                "    For iC=2 To 4" & vbCrlf & _
-                "     If sD(iC)=""1"" Then .WriteLine sH&sF(iC)&""/>""" & vbCrlf & _
-                "    Next" & vbCrlf & _
-                "   Else" & vbCrlf & _
-                "    .WriteLine sO(iL)" & vbCrlf & _
-                "   End If" & vbCrlf & _
-                "  Next" & vbCrlf &_
-                "  .Close" & vbCrlf & _
-                " End With" & vbCrlf & _
-                "Else" & vbCrlf & _
-                " With oFSO.OpenTextFile(sP,2,-1)" & vbCrlf & _
-                "  .WriteLine""<client_state>""" & vbCrlf & _
-                "  For iC=0 to 13" & vbCrlf & _
-                "   If iC=2 Then .WriteLine""<""&sT&"">"":sH=""    <""" & vbCrlf & _
-                "   If iC<2 Or iC>4 Then .WriteLine sH&sF(iC)&"">""&sD(iC)&""</""&sF(iC)&"">""Else If sD(iC)=""1"" Then .WriteLine sH&sF(iC)&""/>""" & vbCrlf & _
-                "  Next" & vbCrlf & _
-                "  .WriteLine""</""&sT&"">""&vbCrlf&""</client_state>""" & vbCrlf & _
-                "  .Close" & vbCrlf & _
-                " End With" & vbCrlf & _
-                "End If" & vbCrlf
-               
-               On Error Resume Next
-               oFSO.DeleteFile sFolder & "program files\BOINC\*account_*.xml", True
-               On Error Goto 0
-               If oFSO.FileExists(sRemoteHostsFile) Then oFSO.DeleteFile sRemoteHostsFile, True
-               If oFSO.FileExists(sGuiRpcAuthFile) Then oFSO.DeleteFile sGuiRpcAuthFile, True
+			  'Copies the BOINC.msi file to allow the creation of the mst.
+				oFSO.CopyFile oMsiFileLocation.Value, sFolder & "TMPBOINC.msi", True
 
-              'Copies the BOINC.msi file to allow the creation of the mst.
-               oFSO.CopyFile oMsiFileLocation.Value, sFolder & "TMPBOINC.msi", True
+				Set oCopyDatabase = oInstaller.OpenDatabase(sFolder & "TMPBOINC.msi", msiOpenDatabaseModeDirect)
+				
+			  'Checks to find the next free file sequence number
+				Set oView = oCopyDatabase.OpenView("SELECT `LastSequence` FROM `Media`")
+				oView.Execute
+				Do 
+					Set oRecord = oView.Fetch
+					If oRecord Is Nothing Then Exit Do 
+					iSequenceNo = cInt(oRecord.StringData(1))
+				Loop 
 
-               Set oCopyDatabase = oInstaller.OpenDatabase(sFolder & "TMPBOINC.msi", msiOpenDatabaseModeDirect)
-               
-              'Checks to find the next free file sequence number
-               Set oView = oCopyDatabase.OpenView("SELECT `LastSequence` FROM `Media`")
-               oView.Execute
-               Do 
-                  Set oRecord = oView.Fetch
-                  If oRecord Is Nothing Then Exit Do 
-                  iSequenceNo = cInt(oRecord.StringData(1))
-               Loop 
+					iDbCommandCount = 4
+					
+				ReDim sDbCommand(iDbCommandCount)
 
-               ReDim sDbCommand(9)
+				sDbCommand(iDbCommandCount - 3) = "INSERT INTO Property (Property, Value) VALUES ('INSTALLDIR', '" & oInstallDir.Value & "')"
 
-               sDbCommand(1) = "UPDATE Component SET Condition = '' WHERE Component = '_AccountFiles'"
+				sDbCommand(iDbCommandCount - 2) = "UPDATE Property SET Value = " & sChecked(oEnableScreensaver) & " WHERE Property = 'ENABLESCREENSAVER'"
 
-               sDbCommand(2) = "INSERT INTO Property (Property, Value) VALUES ('SETUPTYPE', '" & oInstallType.Value & "')"
+				sDbCommand(iDbCommandCount - 1) = "INSERT INTO CustomAction (Action, Type, Target) VALUES ('Set_client_state.xml', '102', '" & sScript & "')"
 
-               sDbCommand(3) = "INSERT INTO Property (Property, Value) VALUES ('INSTALLDIR', '" & oInstallDir.Value & "')"
+				sDbCommand(iDbCommandCount) = "INSERT INTO InstallExecuteSequence (Action, Condition, Sequence) VALUES ('Set_client_state.xml', 'REMOVE<>""ALL""', '4325')"
+					
+				If oInstallType.Value = "Shared" Then
+					iDbCommandCount = iDbCommandCount + 1
+					ReDim Preserve sDbCommand(iDbCommandCount)
+					sDbCommand(iDbCommandCount) = "INSERT INTO Property (Property, Value) VALUES ('ENABLEUSEBYALLUSERS', '1')"
+				End If
+				If oProgramsMenuShortcut.Checked Then
+					iDbCommandCount = iDbCommandCount + 1
+					ReDim Preserve sDbCommand(iDbCommandCount)
+					sDbCommand(iDbCommandCount) = "UPDATE Property SET Value = '0' WHERE Property = 'ENABLESTARTMENUITEMS'"
+				End If
 
-               sDbCommand(4) = "UPDATE Property SET Value = " & sChecked(oEnableScreensaver) & " WHERE Property = 'ENABLESCREENSAVER'"
+				If oInstallType.Value = "Service" Then
+						iDbCommandCount = iDbCommandCount + 1
+						ReDim Preserve sDbCommand(iDbCommandCount)
+						sDbCommand(iDbCommandCount) = "INSERT INTO Property (Property, Value) VALUES ('ENABLEPROTECTEDAPPLICATIONEXECUTION3', '1')"
+				End If
 
-               sDbCommand(5) = "UPDATE Property SET Value = " & sChecked(oEnableLaunchAtLogon) & " WHERE Property = 'ENABLELAUNCHATLOGON'"
+				For iLoop = 0 to UBound(sProjects,2)
+					sXmlName = "account_" & Replace(sProjects(0, iLoop), "/", "_", 8) & ".xml"
+					sXmlFile = sFolder & "CommonAppData\BOINC\" & sXmlName
+					iSequenceNo = iSequenceNo + 1 
+					iDbCommandCount = iDbCommandCount + 1
+					ReDim Preserve sDbCommand(iDbCommandCount)
 
-               sDbCommand(6) = "UPDATE Property SET Value = " & sChecked(oLaunchProgram) & " WHERE Property = 'LAUNCHPROGRAM'"
+				 'Writes account_*.xml file.
+					With oFSO.CreateTextFile(sXmlFile, True)
+					 .WriteLine("<account>")
+					 .WriteLine("	<master_url>" & sProjects(0, iLoop) & "/</master_url>")
+					 .WriteLine("	<authenticator>" & sProjects(1, iLoop) & "</authenticator>")
+					 .WriteLine("</account>")
+					 .Close
+					End With
 
-               sDbCommand(7) = "INSERT INTO Property (Property, Value) VALUES ('ARPSYSTEMCOMPONENT', '" & sChecked(oArpSystemComponent) & "')"
+				 'MSI database modification commands.
+					sDbCommand(iDbCommandCount) = "INSERT INTO File (File, Component_, FileName, FileSize, Sequence) " & _
+					 "VALUES ('" & sXmlName & "', '_BOINCData', " & "'ACCOUN~" & CStr(iLoop + 1) & ".XML|" & _
+					 sXmlName & "', '" & oFSO.GetFile(sXmlFile).Size & "', '" & CStr(iSequenceNo) & "')"
 
-               sDbCommand(8) = "INSERT INTO CustomAction (Action, Type, Target) VALUES ('Set_client_state.xml', '102', '" & sScript & "')"
+				Next
 
-               sDbCommand(9) = "INSERT INTO InstallExecuteSequence (Action, Condition, Sequence) VALUES ('Set_client_state.xml', 'REMOVE<>""ALL""', '4325')"
+				If oAllowedHosts.Value <> "" Then
 
-               iCount = 9
-               If oInstallType.Value = "Shared" Then
-                  iCount = iCount + 1
-                  ReDim Preserve sDbCommand(iCount)
-                  sDbCommand(iCount) = "INSERT INTO Property (Property, Value) VALUES ('ALLUSERS', '1')"
-               End If
-               If oProgramsMenuShortcut.Checked Then
-                  iCount = iCount + 3
-                  ReDim Preserve sDbCommand(iCount)
-                  sDbCommand(iCount - 2) = "DELETE FROM Shortcut WHERE Shortcut = 'BOINCMGRLink'"
-                  sDbCommand(iCount - 1) = "DELETE FROM Directory WHERE Directory = 'BOINCStartMenu'"
-                  sDbCommand(iCount) = "DELETE FROM Icon WHERE Name = 'BOINCMGRLink_80F0D10B734F409F8FF15D5E21A32263.exe'"
+					iDbCommandCount = iDbCommandCount + 2
+					ReDim Preserve sDbCommand(iDbCommandCount)
+					iSequenceNo =iSequenceNo + 2
 
-               End If
+				 'Writes remote_hosts.cfg file.
+					With oFSO.CreateTextFile(sRemoteHostsFile, True)
+					 .WriteLine(oAllowedHosts.Value)
+					 .Close
+					End With
 
-               If oInstallType.Value = "Service" Then
+				 'Writes gui_rpc_auth.cfg file.
+					With oFSO.CreateTextFile(sGuiRpcAuthFile, True)
+					.WriteLine(oRemotePassword1.Value)
+					 .Close
+					End With
 
-                  iCount = iCount + 2
-                  ReDim Preserve sDbCommand(iCount)
-                  sDbCommand(iCount - 1) = "DELETE FROM LockPermissions WHERE LockObject = 'SERVICECONFIGDIRECTORY' AND User = '[%USERNAME]'" 
-                  sDbCommand(iCount) = "DELETE FROM LockPermissions WHERE LockObject = 'SERVICECONFIGDIRECTORY' AND User = '[GROUPALIAS_ADMINISTRATORS]'"
+					sDbCommand(iDbCommandCount - 1) = "INSERT INTO File (File, Component_, FileName, FileSize, Sequence) " & _
+					 "VALUES ('remote_hosts.cfg', '_BOINCData', 'REMOTE~2.CFG|remote_hosts.cfg', '" & _
+					oFSO.GetFile(sRemoteHostsFile).Size & "', '" & CStr(iSequenceNo - 1) & "')"
 
-                  If oServiceDomainUserName.Value <> "" Then
-                     iCount = iCount + 3
-                     ReDim Preserve sDbCommand(iCount)
-                     sDbCommand(iCount - 2) = "INSERT INTO Property (Property, Value) " & _
-                                              "VALUES ('SERVICE_DOMAINUSERNAME', '" & oServiceDomainUserName.Value & "')"
-                     sDbCommand(iCount - 1) = "INSERT INTO Property (Property, Value) " & _
-                                              "VALUES ('SERVICE_PASSWORD', '" & oServicePassword1.Value & "')"
-                     sDbCommand(iCount) = "INSERT INTO Property (Property, Value) VALUES ('SERVICE_GRANTEXECUTIONRIGHT', '1')"
-                  Else
-                     iCount = iCount + 4
-                     ReDim Preserve sDbCommand(iCount)
-                     sDbCommand(iCount - 3) = "DELETE FROM CustomAction WHERE Source = 'NewBinary22'"
-                     sDbCommand(iCount - 2) = "DELETE FROM Binary WHERE Name = 'NewBinary22'"
-                     sDbCommand(iCount - 1) = "UPDATE ServiceInstall SET StartName = '', Password = '' WHERE ServiceInstall = 'NewServiceInstall1'"
-                     sDbCommand(iCount) = "DELETE FROM LockPermissions WHERE LockObject = 'SERVICECONFIGDIRECTORY' AND User = '[SERVICE_USERNAME]'"
-                  End If
+					sDbCommand(iDbCommandCount) = "INSERT INTO File (File, Component_, FileName, FileSize, Sequence) " & _
+					 "VALUES ('gui_rpc_auth.cfg', '_BOINCData', 'GUI_RP~2.CFG|gui_rpc_auth.cfg', '" & _
+					oFSO.GetFile(sGuiRpcAuthFile).Size & "', '" & CStr(iSequenceNo) & "')"
 
-                  Set oView = oCopyDatabase.OpenView("SELECT `LockObject`, `Table`, `Domain`, `User`, `Permission` FROM `LockPermissions`")
-                  Set oRecord = oInstaller.CreateRecord(5)
-                  oRecord.StringData(1) = "SERVICECONFIGDIRECTORY"
-                  oRecord.StringData(2) = "CreateFolder"
-                  oRecord.StringData(3) = ""
-                  oRecord.StringData(4) = oPermissions.Value
-                  oRecord.StringData(5) = "1880031743"
-                  oView.Execute oRecord
-                  oView.Modify msiViewModifyAssign, oRecord
+				End If
 
-               End If
+				sDbCommand(0) = "UPDATE Media SET LastSequence = " & CStr(iSequenceNo) & " WHERE DiskId = 1"
 
-               For iLoop = 0 to UBound(sProjects,2)
-                  sXmlName = "account_" & Replace(sProjects(0, iLoop), "/", "_", 8) & ".xml"
-                  sXmlFile = sFolder & "program files\BOINC\" & sXmlName
-                  iSequenceNo = iSequenceNo + 1 
-                  iCount = iCount + 1
-                  ReDim Preserve sDbCommand(iCount)
+			  'Modify TMPBOINC.MSI
+				For iDbCommandCount = 0 To UBound(sDbCommand)
+					Set oView = oCopyDatabase.OpenView(sDbCommand(iDbCommandCount))
+					oView.Execute
+				Next
 
-                 'Writes account_*.xml file.
-                  With oFSO.CreateTextFile(sXmlFile, True)
-                     .WriteLine("<account>")
-                     .WriteLine("    <master_url>" & sProjects(0, iLoop) & "/</master_url>")
-                     .WriteLine("    <authenticator>" & sProjects(1, iLoop) & "</authenticator>")
-                     .WriteLine("</account>")
-                     .Close
-                  End With
+				oCopyDatabase.Commit
+				oCopyDatabase.GenerateTransform oOriginalDatabase, sFolder & "BOINC.mst"
+				oCopyDatabase.CreateTransformSummaryInfo oOriginalDatabase, sFolder & "BOINC.mst", _
+														msiTransformErrorNone, msiTransformValidationNone
+				Set oCopyDatabase = Nothing
+				Set oRecord = Nothing
+				Set oView = Nothing
+				Set oOriginalDatabase = Nothing
 
-                 'MSI database modification commands.
-                  sDbCommand(iCount) = "INSERT INTO File (File, Component_, FileName, FileSize, Sequence) " & _
-                   "VALUES ('" & sXmlName & "', '_AccountFiles', " & "'ACCOUN~" & CStr(iLoop + 1) & ".XML|" & _
-                   sXmlName & "', '" & oFSO.GetFile(sXmlFile).Size & "', '" & CStr(iSequenceNo) & "')"
+			'**COMMENT THe LINE BELOW OUT IF YOU WANT THE MODIFIED .MSI - BUT DON'T RUN THIS SCRIPT AGAINST IT**
+				oFSO.DeleteFile sFolder & "TMPBOINC.msi", True
 
-               Next
+				MsgBox "The MST file has been successfully created.", vbInformation, Document.Title
+				oStatus.InnerText = "The MST file has been successfully created."
 
-               If oAllowedHosts.Value <> "" Then
-
-                  iCount = iCount + 2
-                  ReDim Preserve sDbCommand(iCount)
-                  iSequenceNo =iSequenceNo + 2
-
-                 'Writes remote_hosts.cfg file.
-                  With oFSO.CreateTextFile(sRemoteHostsFile, True)
-                     .WriteLine(oAllowedHosts.Value & vbCr)
-                     .Close
-                  End With
-
-                 'Writes remote_hosts.cfg file.
-                  With oFSO.CreateTextFile(sGuiRpcAuthFile, True)
-                    .WriteLine(oRemotePassword1.Value & vbCr)
-                     .Close
-                  End With
-
-                  sDbCommand(iCount - 1) = "INSERT INTO File (File, Component_, FileName, FileSize, Sequence) " & _
-                   "VALUES ('remote_hosts.cfg', '_AccountFiles', 'REMOTE~2.CFG|remote_hosts.cfg', '" & _
-                    oFSO.GetFile(sRemoteHostsFile).Size & "', '" & CStr(iSequenceNo - 1) & "')"
-
-                  sDbCommand(iCount) = "INSERT INTO File (File, Component_, FileName, FileSize, Sequence) " & _
-                   "VALUES ('gui_rpc_auth.cfg', '_AccountFiles', 'GUI_RP~2.CFG|gui_rpc_auth.cfg', '" & _
-                    oFSO.GetFile(sGuiRpcAuthFile).Size & "', '" & CStr(iSequenceNo) & "')"
-
-               End If
-
-               sDbCommand(0) = "UPDATE Media SET LastSequence = " & CStr(iSequenceNo) & " WHERE DiskId = 1"
-
-              'Modify TMPBOINC.MSI
-               For iCount = 0 To UBound(sDbCommand)
-                  Set oView = oCopyDatabase.OpenView(sDbCommand(iCount))
-                  oView.Execute
-               Next
-
-               oCopyDatabase.Commit
-               oCopyDatabase.GenerateTransform oOriginalDatabase, sFolder & "BOINC.mst"
-               oCopyDatabase.CreateTransformSummaryInfo oOriginalDatabase, sFolder & "BOINC.mst", _
-                                                        msiTransformErrorNone, msiTransformValidationNone
-               Set oCopyDatabase = Nothing
-               Set oRecord = Nothing
-               Set oView = Nothing
-               Set oOriginalDatabase = Nothing
-
-            '**COMMENT THe LINE BELOW OUT IF YOU WANT THE MODIFIED .MSI - BUT DON'T RUN THIS SCRIPT AGAINST IT**
-               oFSO.DeleteFile sFolder & "TMPBOINC.msi", True
-
-               MsgBox "The MST file has been successfully created.", vbInformation, Document.Title
-
-            End If
-         End If 
-      End If
-   End If
+			End If
+		 End If 
+		End If
+	End If
 End Sub
 
 Function sChecked(oCheckbox)
-   If oCheckbox.Checked Then sChecked = "1" Else sChecked = "0"
+	If oCheckbox.Checked Then sChecked = "1" Else sChecked = "0"
 End Function
 
 Sub Sleep(iSeconds) 
-   Set oShell = CreateObject("Wscript.Shell") 
-   sCmd = "%COMSPEC% /c ping -n " & 1 + iSeconds & " 127.0.0.1>nul" 
-   oShell.Run sCmd,0,1 
+	Set oShell = CreateObject("Wscript.Shell") 
+	sCmd = "%COMSPEC% /c ping -n " & 1 + iSeconds & " 127.0.0.1>nul" 
+	oShell.Run sCmd,0,1 
 End Sub
 
 Function bIsNumber(sValue)
-   On Error Resume Next
-      bIsNumber = Isnumeric(sValue)
-      If Left(sValue, 1) = "0" Then bIsNumber = False
-   On Error Goto 0
+	On Error Resume Next
+		bIsNumber = Isnumeric(sValue)
+		If Left(sValue, 1) = "0" Then bIsNumber = False
+	On Error Goto 0
 End Function
 
 </script>
 <body scroll="no">
-
-<table id="oStandard">
-	<tr>
-		<td>Path to BOINC.MSI file</td>
-		<td><input type="text" size="94" name="oMsiFileLocation">
-		<input type="button" value="..." onclick="GetMsiFile" style="height: 22px; width: 22px;">
-		</td>
+	<table id="oStandard">
+		<tr>
+			<td>Path to BOINC.MSI file</td>
+			<td>
+				<input type="file" value="" size="75" name="oMsiFileLocation" />
+			</td>
+		</tr>
+		<tr>
+			<td>Architecture</td>
+			<td>
+				<input type="radio" name="oArch" value="86" /> x86
+				<input type="radio" name="oArch" value="64" checked="true" /> x64
+			</td>
+		</tr>
+		<tr>
+			<td>Import Projects from existing BOINC Account Files (account_*.xml)</td>
+			<td>
+				<input type="file" value="" size="75" name="strXMLFileLocation" onChange="ImportProjects" />
+			</td>
+		</tr>		
+		<tr>
+			<td>BOINC Projects URLs and account keys
+			<br />
+			<i>The example project shown has a dummy
+			<br />account key. Please change or delete it.
+			<br /></i></td>
+			<td>
+				<textarea name="oProjects" rows="4" cols="68"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><input type="button" value="Clear List" onclick="ClearProjects" /></td>
+		</tr>		
+		<tr>
+			<td>Location to install BOINC to</td>
+			<td>
+				<input type="text" size="85" name="oInstallDir" value="C:\Program Files\BOINC" />
+			</td>
+		</tr>
+		<tr>
+			<td>Installation Method</td>
+			<!--			<td><select size="1" name="oInstallType" onchange="ServiceSettings">  Version 5 legacy code -->
+			<td>
+				<select size="1" name="oInstallType">
+					<option value="Single">Single-User Install</option>
+					<option value="Shared">Shared Install</option>
+					<option selected="selected" value="Service">Service Install</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>Automatically enable the screensaver</td>
+			<td>
+				<input type="checkbox" name="oEnableScreensaver" />
+			</td>
+		</tr>
+		<tr>
+			<td>Remove &#39;Programs Menu&#39; Shortcut</td>
+			<td>
+				<input type="checkbox" name="oProgramsMenuShortcut" checked="true" />
+			</td>
+		</tr>
+		<tr>
+			<td>Remove BOINC from the &#39;Add/Remove Programs&#39; list</td>
+			<td>
+				<input type="checkbox" name="oArpSystemComponent" checked="true" />
+			</td>
+		</tr>
+		<tr>
+			<td>Allowed Remote Hosts (one host per line)</td>
+			<td>
+				<textarea name="oAllowedHosts" rows="3" cols="20"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td>Remote Access password (optional)</td>
+			<td>
+			<input type="password" size="23" name="oRemotePassword1" /> 
+			<input type="password" size="23" name="oRemotePassword2" /></td>
+		</tr>
+	<!--<tr>
+			<td id="oUsername" style="color:gray">User account for the service 
+			(optional)</td>
+			<td>
+			<input type="text" disabled="True" size="30" name="oServiceDomainUserName" value="Service install only"></td>
 	</tr>
 	<tr>
-		<td>BOINC Projects URLs and account keys <br>
-		<i>The two example projects shown have dummy<br>
-		account keys. Please change or delete them.<br>
-		Click
-		<a href="http://www.thelazyslug.com/boinc_building_the_mst.htm" target="_blank">
-		here</a> for more information.</i></td>
-		<td><textarea name="oProjects" rows="4" cols="71"></textarea></td>
+			<td id="oPassword" style="color:gray">Password for the user account</td>
+			<td>
+			<input type="password" size="23" disabled="True" name="oServicePassword1">
+			<input type="password" size="23" disabled="True" name="oServicePassword2">
+			</td>
 	</tr>
 	<tr>
-		<td>(Enter only one project per line)</td>
-		<td>
-		<input type="button" value="    Import Projects from an existing BOINC installation...   " onclick="GetXMLFiles">
-		<input type="button" value="Clear List" onclick="ClearProjects"> </td>
+			<td id="oPermissionsArea" style="color:gray">BOINC Folder Permissions</td>
+			<td><select size="1" disabled="True" name="oPermissions">
+			<option value="Domain Admins">Domain Administrators</option>
+			<option value="Administrators">Local Administrators</option>
+			<option value="Users">All Users</option>
+			</select> </td>
 	</tr>
-	<tr>
-		<td>Location to install BOINC to</td>
-		<td>
-		<input type="text" size="50" name="oInstallDir" value="C:\Program Files\BOINC">
-		</td>
-	</tr>
-	<tr>
-		<td>Installation Method</td>
-		<td><select size="1" name="oInstallType" onchange="ServiceSettings">
-		<option value="Single">Single-User Install</option>
-		<option value="Shared">Shared Install</option>
-		<option value="Service">Service Install</option>
-		</select> </td>
-	</tr>
-	<tr>
-		<td>Automatically enable the screensaver</td>
-		<td><input type="checkbox" name="oEnableScreensaver" checked="True"></td>
-	</tr>
-	<tr>
-		<td>Automatically start BOINC when users sign on</td>
-		<td><input type="checkbox" name="oEnableLaunchAtLogon" checked="True"></td>
-	</tr>
-	<tr>
-		<td>Launch BOINC Manager after setup completes</td>
-		<td><input type="checkbox" name="oLaunchProgram" checked="True"></td>
-	</tr>
-	<tr>
-		<td>Remove 'Programs Menu' Shortcut</td>
-		<td><input type="checkbox" name="oProgramsMenuShortcut"></td>
-	</tr>
-	<tr>
-		<td>Remove BOINC from the 'Add/Remove Programs' list</td>
-		<td><input type="checkbox" name="oArpSystemComponent"></td>
-	</tr>
-	<tr>
-		<td>Allowed Remote Hosts (one host per line)</td>
-		<td><textarea name="oAllowedHosts" rows="3" cols="20"></textarea></td>
-	</tr>
-	<tr>
-		<td>Remote Access password (optional)</td>
-		<td><input type="password" size="23" name="oRemotePassword1">
-		<input type="password" size="23" name="oRemotePassword2"> </td>
-	</tr>
-	<tr>
-		<td id="oUsername" style="color:gray">User account for the service 
-		(optional)</td>
-		<td>
-		<input type="text" disabled="True" size="30" name="oServiceDomainUserName" value="Service install only"></td>
-	</tr>
-	<tr>
-		<td id="oPassword" style="color:gray">Password for the user account</td>
-		<td>
-		<input type="password" size="23" disabled="True" name="oServicePassword1">
-		<input type="password" size="23" disabled="True" name="oServicePassword2">
-		</td>
-	</tr>
-	<tr>
-		<td id="oPermissionsArea" style="color:gray">BOINC Folder Permissions</td>
-		<td><select size="1" disabled="True" name="oPermissions">
-		<option value="Domain Admins">Domain Administrators</option>
-		<option value="Administrators">Local Administrators</option>
-		<option value="Users">All Users</option>
-		</select> </td>
-	</tr>
-</table>
-<table id="oAdvanced">
-	<tr>
-		<td style="width: 303px">BOINC Activity</td>
-		<td colspan="2"><input type="radio" name="oBoincActivity" value="1">Run 
-		Always <br>
-		<input type="radio" name="oBoincActivity" value="2" checked="True">Run based 
-		on preferences (Default)<br>
-		<input type="radio" name="oBoincActivity" value="3">Suspend</td>
-	</tr>
-	<tr>
-		<td>Network Activity</td>
-		<td colspan="2"><input type="radio" name="oNetworkActivity" value="1">Always 
-		Available <br>
-		<input type="radio" name="oNetworkActivity" value="2" checked="True">Based 
-		on preferences (Default) <br>
-		<input type="radio" name="oNetworkActivity" value="3">Suspended</td>
-	</tr>
-	<tr>
-		<td>Connect via HTTP proxy server</td>
-		<td><input type="checkbox" name="oUseHttpProxy" onclick="ChangeHttpProxyArea"></td>
-	</tr>
-	<tr id="oHttpArea" style="color:gray">
-		<td>HTTP Proxy Server Configuration</td>
-		<td>Address:</td>
-		<td><input type="text" disabled="True" name="oHttpServerName"></td>
-	</tr>
-	<tr id="oHttpArea" style="color:gray">
-		<td></td>
-		<td>Port:</td>
-		<td><input type="text" disabled="True" name="oHttpServerPort" value="80"></td>
-	</tr>
-	<tr id="oHttpArea" style="color:gray">
-		<td></td>
-		<td>User Name:</td>
-		<td><input type="text" disabled="True" name="oHttpUserName"></td>
-	</tr>
-	<tr id="oHttpArea" style="color:gray">
-		<td></td>
-		<td>Password:</td>
-		<td><input type="password" disabled="True" name="oHttpUserPasswd1">
-		<input type="password" disabled="True" name="oHttpUserPasswd2"></td>
-	</tr>
-	<tr>
-		<td>Connect via SOCKS proxy server</td>
-		<td><input type="checkbox" name="oUseSocksProxy" onclick="ChangeSocksProxyArea"></td>
-	</tr>
-	<tr id="oSocksArea" style="color:gray">
-		<td>SOCKS Proxy Server Configuration</td>
-		<td>Address:</td>
-		<td><input type="text" disabled="True" name="oSocksServerName"></td>
-	</tr>
-	<tr id="oSocksArea" style="color:gray">
-		<td></td>
-		<td>Port:</td>
-		<td><input type="text" disabled="True" name="oSocksServerPort" value="80"></td>
-	</tr>
-	<tr id="oSocksArea" style="color:gray">
-		<td></td>
-		<td>User Name:</td>
-		<td><input type="text" disabled="True" name="oSocksUserName"></td>
-	</tr>
-	<tr id="oSocksArea" style="color:gray">
-		<td></td>
-		<td>Password:</td>
-		<td><input type="password" disabled="True" name="oSocksUserPasswd1">
-		<input type="password" disabled="True" name="oSocksUserPasswd2"></td>
-	</tr>
-</table>
-<table>
-	<tr><td id="oSpacer" colspan="2" style="height: 20px"></td></tr>
-	<tr>
-		<td style="width: 450px"><input type="button" value="Generate MST" onclick="GenerateMST">
-		<input type="button" value="Reset the form" onclick="location.reload">
-		<input type="button" name="oOptionsButton" value="Advanced Options..." onclick="ChangeOptions" style="width: 175px">
-		</td>
-		<td><span id="oStatus">For full instructions and further 
-		help, please visit
-		<a href="http://www.thelazyslug.com/boinc_building_the_mst.htm" target="_blank">
-		www.thelazyslug.com</a>.</span></td>
-	</tr>
-</table>
-
+-->
+	</table>
+	<table id="oAdvanced">
+		<tr>
+			<td style="width: 303px">BOINC Activity</td>
+			<td colspan="2">
+			<input type="radio" name="oBoincActivity" value="1" />Run Always
+			<br />
+			<input type="radio" name="oBoincActivity" value="2" checked="true" />Run based on preferences (Default)
+			<br />
+			<input type="radio" name="oBoincActivity" value="3" />Suspend</td>
+		</tr>
+		<tr>
+			<td>Network Activity</td>
+			<td colspan="2">
+			<input type="radio" name="oNetworkActivity" value="1" />Always Available
+			<br />
+			<input type="radio" name="oNetworkActivity" value="2" checked="true" />Based on preferences (Default)
+			<br />
+			<input type="radio" name="oNetworkActivity" value="3" />Suspended</td>
+		</tr>
+		<tr>
+			<td>Connect via HTTP proxy server</td>
+			<td>
+				<input type="checkbox" name="oUseHttpProxy" onclick="ChangeHttpProxyArea" />
+			</td>
+		</tr>
+		<tr id="oHttpArea" style="color:gray">
+			<td>HTTP Proxy Server Configuration</td>
+			<td>Address:</td>
+			<td>
+				<input type="text" disabled="true" name="oHttpServerName" />
+			</td>
+		</tr>
+		<tr id="oHttpArea" style="color:gray">
+			<td></td>
+			<td>Port:</td>
+			<td>
+				<input type="text" disabled="true" name="oHttpServerPort" value="80" />
+			</td>
+		</tr>
+		<tr id="oHttpArea" style="color:gray">
+			<td></td>
+			<td>User Name:</td>
+			<td>
+				<input type="text" disabled="true" name="oHttpUserName" />
+			</td>
+		</tr>
+		<tr id="oHttpArea" style="color:gray">
+			<td></td>
+			<td>Password:</td>
+			<td>
+			<input type="password" disabled="true" name="oHttpUserPasswd1" /> 
+			<input type="password" disabled="true" name="oHttpUserPasswd2" /></td>
+		</tr>
+		<tr>
+			<td>Connect via SOCKS proxy server</td>
+			<td>
+				<input type="checkbox" name="oUseSocksProxy" onclick="ChangeSocksProxyArea" />
+			</td>
+		</tr>
+		<tr id="oSocksArea" style="color:gray">
+			<td>SOCKS Proxy Server Configuration</td>
+			<td>Address:</td>
+			<td>
+				<input type="text" disabled="true" name="oSocksServerName" />
+			</td>
+		</tr>
+		<tr id="oSocksArea" style="color:gray">
+			<td></td>
+			<td>Port:</td>
+			<td>
+				<input type="text" disabled="true" name="oSocksServerPort" value="80" />
+			</td>
+		</tr>
+		<tr id="oSocksArea" style="color:gray">
+			<td></td>
+			<td>User Name:</td>
+			<td>
+				<input type="text" disabled="true" name="oSocksUserName" />
+			</td>
+		</tr>
+		<tr id="oSocksArea" style="color:gray">
+			<td></td>
+			<td>Password:</td>
+			<td>
+			<input type="password" disabled="true" name="oSocksUserPasswd1" /> 
+			<input type="password" disabled="true" name="oSocksUserPasswd2" /></td>
+		</tr>
+	</table>
+	<table>
+		<tr>
+			<td id="oSpacer" colspan="2" style="height: 74px"></td>
+		</tr>
+		<tr>
+			<td style="width: 450px">
+			<input type="button" value="Generate MST" onclick="GenerateMST" /> 
+			<input type="button" value="Reset the form" onclick="location.reload" /> 
+			<input type="button" name="oOptionsButton" value="Advanced Options..." onclick="ChangeOptions"
+			style="width: 150px" /></td>
+			<td>
+				<span id="oStatus">For full instructions and further help, please visit 
+				<a href="http://n8felton.github.io/BOINC-MST-Creator"
+				target="_blank">http://n8felton.github.io/BOINC-MST-Creator</a>.</span>
+			</td>
+		</tr>
+	</table>
 </body>
-
 </html>
+
