@@ -381,18 +381,37 @@ Sub GenerateMST()
 					ReDim Preserve sDbCommand(iDbCommandCount)
 					sDbCommand(iDbCommandCount) = "INSERT INTO Property (Property, Value) VALUES ('ENABLEUSEBYALLUSERS', '1')"
 				End If
+
+				If oInstallType.Value = "Service" Then
+					iDbCommandCount = iDbCommandCount + 1
+					ReDim Preserve sDbCommand(iDbCommandCount)
+					sDbCommand(iDbCommandCount) = "INSERT INTO Property (Property, Value) VALUES ('ENABLEPROTECTEDAPPLICATIONEXECUTION3', '1')"
+				End If
+				
 				If oProgramsMenuShortcut.Checked Then
 					iDbCommandCount = iDbCommandCount + 1
 					ReDim Preserve sDbCommand(iDbCommandCount)
 					sDbCommand(iDbCommandCount) = "UPDATE Property SET Value = '0' WHERE Property = 'ENABLESTARTMENUITEMS'"
+				End If				
+				
+				' Disable BOINC Manager Installation
+				' The default INSTALLLEVEL is 100, so we set the BOINCManager features to > 100
+				If oDisableBoincManagerFeature.Checked Then
+					iDbCommandCount = iDbCommandCount + 3
+					ReDim Preserve sDbCommand(iDbCommandCount)
+					sDbCommand(iDbCommandCount - 2) = "UPDATE Feature SET Level = '500' WHERE Feature = 'BOINCManager'"
+					sDbCommand(iDbCommandCount - 1) = "UPDATE Feature SET Level = '500' WHERE Feature = 'BOINCManagerGlobalization'"
+					sDbCommand(iDbCommandCount) = "UPDATE Feature SET Level = '500' WHERE Feature = 'BOINCManagerStartup'"
 				End If
 
-				If oInstallType.Value = "Service" Then
-						iDbCommandCount = iDbCommandCount + 1
-						ReDim Preserve sDbCommand(iDbCommandCount)
-						sDbCommand(iDbCommandCount) = "INSERT INTO Property (Property, Value) VALUES ('ENABLEPROTECTEDAPPLICATIONEXECUTION3', '1')"
+				' Disable BOINC Screen Saver Installation
+				' The default INSTALLLEVEL is 100, so we set the BOINCManager features to > 100
+				If oDisableBoincScreenSaverFeature.Checked Then
+					iDbCommandCount = iDbCommandCount + 1
+					ReDim Preserve sDbCommand(iDbCommandCount)
+					sDbCommand(iDbCommandCount) = "UPDATE Feature SET Level = '500' WHERE Feature = 'BOINCScreensaver'"
 				End If
-
+				
 				For iLoop = 0 to UBound(sProjects,2)
 					sXmlName = "account_" & Replace(sProjects(0, iLoop), "/", "_", 8) & ".xml"
 					sXmlFile = sFolder & "CommonAppData\BOINC\" & sXmlName
